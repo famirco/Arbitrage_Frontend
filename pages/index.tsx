@@ -3,9 +3,25 @@ import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://amirez.info/api/v1';
 
+interface Token {
+  id: number;
+  name: string;
+  symbol: string;
+  contract_address: string;
+}
+
+interface PriceRecord {
+  id: number;
+  token_id: number;
+  price_usdc: string;
+  gas_fee: string;
+  rpc_url: string;
+  created_at: string;
+}
+
 export default function Home() {
-  const [tokens, setTokens] = useState([]);
-  const [priceRecords, setPriceRecords] = useState([]);
+  const [tokens, setTokens] = useState<Token[]>([]);
+  const [priceRecords, setPriceRecords] = useState<PriceRecord[]>([]);
 
   const fetchData = async () => {
     try {
@@ -32,7 +48,7 @@ export default function Home() {
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Tokens</h2>
         <div className="grid gap-4">
-          {tokens.map((token: any) => (
+          {tokens.map((token: Token) => (
             <div key={token.id} className="border p-4 rounded">
               <p>Name: {token.name}</p>
               <p>Symbol: {token.symbol}</p>
@@ -45,16 +61,9 @@ export default function Home() {
       <div>
         <h2 className="text-xl font-semibold mb-2">Price Records</h2>
         <div className="grid gap-4">
-          {priceRecords.map((record: any) => (
+          {priceRecords.map((record: PriceRecord) => (
             <div key={record.id} className="border p-4 rounded">
               <p>Price USDC: {record.price_usdc}</p>
               <p>Gas Fee: {record.gas_fee}</p>
               <p>RPC URL: {record.rpc_url}</p>
-              <p>Time: {new Date(record.created_at).toLocaleString()}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
+              <p>Time: {
