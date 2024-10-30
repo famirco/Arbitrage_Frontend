@@ -1,80 +1,60 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { useEffect, useState } from 'react'
-import axios from 'axios'
-const API_BASE_URL = 'https://amirez.info/api/v1';
-interface Token {
-  id: number
-  name: string
-  symbol: string
-  contract_address: string
-}
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
-interface PriceRecord {
-  id: number
-  token_id: number
-  price_usdc: string
-  gas_fee: string
-  rpc_url: string
-  created_at: string
-}
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://amirez.info/api/v1';
 
 export default function Home() {
-  const [tokens, setTokens] = useState<Token[]>([])
-  const [prices, setPrices] = useState<PriceRecord[]>([])
+  const [tokens, setTokens] = useState([]);
+  const [priceRecords, setPriceRecords] = useState([]);
+
+  const fetchData = async () => {
+    try {
+      const tokensResponse = await axios.get(`${API_URL}/tokens`);
+      const priceRecordsResponse = await axios.get(`${API_URL}/price_records`);
+      
+      setTokens(tokensResponse.data);
+      setPriceRecords(priceRecordsResponse.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [tokensResponse, pricesResponse] = await Promise.all([
-          axios.get(`${API_BASE_URL}/tokens`),
-          axios.get(`${API_BASE_URL}/price_records`)
-        ]);
-
-        setTokens(tokensResponse.data)
-        setPrices(pricesResponse.data)
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    fetchData()
-    const interval = setInterval(fetchData, 10000)
-    return () => clearInterval(interval)
-  }, [])
+    fetchData();
+    const interval = setInterval(fetchData, 30000); // Fetch every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Crypto Arbitrage Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-4">Crypto Arbitrage Data</h1>
       
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white">
-          <thead>
-            <tr>
-              <th className="px-4 py-2">Token</th>
-              <th className="px-4 py-2">Price (USDC)</th>
-              <th className="px-4 py-2">Gas Fee</th>
-              <th className="px-4 py-2">RPC URL</th>
-              <th className="px-4 py-2">Updated At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {prices.map((price) => {
-              const token = tokens.find(t => t.id === price.token_id)
-              return (
-                <tr key={price.id}>
-                  <td className="border px-4 py-2">{token?.symbol}</td>
-                  <td className="border px-4 py-2">${price.price_usdc}</td>
-                  <td className="border px-4 py-2">${price.gas_fee}</td>
-                  <td className="border px-4 py-2">{price.rpc_url}</td>
-                  <td className="border px-4 py-2">
-                    {new Date(price.created_at).toLocaleString()}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">Tokens</h2>
+        <div className="grid gap-4">
+          {tokens.map((token: any) => (
+            <div key={token.id} className="border p-4 rounded">
+              <p>Name: {token.name}</p>
+              <p>Symbol: {token.symbol}</p>
+              <p>Contract: {token.contract_address}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h2 className="text-xl font-semibold mb-2">Price Records</h2>
+        <div className="grid gap-4">
+          {priceRecords.map((record: any) => (
+            <div key={record.id} className="border p-4 rounded">
+              <p>Price USDC: {record.price_usdc}</p>
+              <p>Gas Fee: {record.gas_fee}</p>
+              <p>RPC URL: {record.rpc_url}</p>
+              <p>Time: {new Date(record.created_at).toLocaleString()}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
-  )
+  );
 }
