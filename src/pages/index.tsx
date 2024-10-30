@@ -9,11 +9,11 @@ export default function Home() {
   const [opportunities, setOpportunities] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAndUpdateData = async () => {
       try {
         const [pricesRes, oppsRes] = await Promise.all([
-          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/price_records`),
-          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/arbitrage_opportunities`)
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/price_records`),
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/arbitrage_opportunities`)
         ]);
         setPrices(pricesRes.data);
         setOpportunities(oppsRes.data);
@@ -22,9 +22,10 @@ export default function Home() {
       }
     };
 
-    fetchData();
-    const interval = setInterval(fetchData, 30000); // هر 30 ثانیه به‌روزرسانی
-    return () => clearInterval(interval);
+    fetchAndUpdateData(); // اجرای اولیه
+    const interval = setInterval(fetchAndUpdateData, 30000); // هر 30 ثانیه به‌روزرسانی
+
+    return () => clearInterval(interval); // پاکسازی interval در زمان unmount
   }, []);
 
   return (
