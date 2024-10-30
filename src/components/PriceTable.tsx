@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Paper, Title } from '@mantine/core';
+import { Table, Paper, Title, Text } from '@mantine/core';
 
 interface Token {
   symbol: string;
@@ -18,14 +18,40 @@ interface PriceTableProps {
   prices: PriceRecord[];
 }
 
-export const PriceTable = ({ prices }: PriceTableProps) => {
-  const groupedPrices = prices.reduce((acc, price) => {
-    if (!acc[price.token.symbol]) {
-      acc[price.token.symbol] = [];
+export const PriceTable = ({ prices = [] }: PriceTableProps) => {
+  if (!Array.isArray(prices) || prices.length === 0) {
+    return (
+      <Paper shadow="sm" p="md" withBorder>
+        <Title order={2} mb="md">Live Price Comparison</Title>
+        <Text>No price data available</Text>
+      </Paper>
+    );
+  }
+
+  const validPrices = prices.filter(price => 
+    price && 
+    price.token && 
+    typeof price.token === 'object' &&
+    price.token.symbol
+  );
+
+  if (validPrices.length === 0) {
+    return (
+      <Paper shadow="sm" p="md" withBorder>
+        <Title order={2} mb="md">Live Price Comparison</Title>
+        <Text>No valid price data available</Text>
+      </Paper>
+    );
+  }
+
+  const groupedPrices = validPrices.reduce<Record<string, PriceRecord[]>>((acc, price) => {
+    const symbol = price.token?.symbol || 'Unknown';
+    if (!acc[symbol]) {
+      acc[symbol] = [];
     }
-    acc[price.token.symbol].push(price);
+    acc[symbol].push(price);
     return acc;
-  }, {} as Record<string, PriceRecord[]>);
+  }, {});
 
   return (
     <Paper shadow="sm" p="md" withBorder>
@@ -42,23 +68,29 @@ export const PriceTable = ({ prices }: PriceTableProps) => {
         </thead>
         <tbody>
           {Object.entries(groupedPrices).map(([symbol, tokenPrices]) => {
-            const minPrice = Math.min(...tokenPrices.map(p => parseFloat(p.price_usdc)));
-            const maxPrice = Math.max(...tokenPrices.map(p => parseFloat(p.price_usdc)));
-            const priceDiff = ((maxPrice - minPrice) / minPrice * 100).toFixed(2);
+            const validPriceValues = tokenPrices
+              .map(p => parseFloat(p.price_usdc))
+              .filter(p => !isNaN(p));
+
+            const minPrice = Math.min(...validPriceValues);
+            const maxPrice = Math.max(...validPriceValues);
+            const priceDiff = minPrice > 0 ? ((maxPrice - minPrice) / minPrice * 100).toFixed(2) : '0.00';
 
             return tokenPrices.map((price, idx) => (
-              <tr key={price.id}>
+              <tr key={price.id || idx}>
                 {idx === 0 && (
                   <td rowSpan={tokenPrices.length}>
                     <div>
                       <strong>{symbol}</strong>
-                      <div style={{ color: 'gray', fontSize: '0.9em' }}>{price.token.name}</div>
+                      <div style={{ color: 'gray', fontSize: '0.9em' }}>
+                        {price.token?.name || 'Unknown'}
+                      </div>
                     </div>
                   </td>
                 )}
-                <td>{new URL(price.rpc_url).hostname}</td>
-                <td>${parseFloat(price.price_usdc).toFixed(6)}</td>
-                <td>${parseFloat(price.gas_fee).toFixed(6)}</td>
+                <td>{price.rpc_url ? new URL(price.rpc_url).hostname : 'N/A'}</td>
+                <td>${parseFloat(price.price_usdc || '0').toFixed(6)}</td>
+                <td>${parseFloat(price.gas_fee || '0').toFixed(6)}</td>
                 {idx === 0 && (
                   <td rowSpan={tokenPrices.length} style={{ color: parseFloat(priceDiff) > 1 ? 'green' : 'inherit' }}>
                     {priceDiff}%

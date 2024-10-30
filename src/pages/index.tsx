@@ -1,54 +1,34 @@
 import { useState, useEffect } from 'react';
-import { Container, Space } from '@mantine/core';
+import { Container, Space, Text } from '@mantine/core';
 import axios from 'axios';
 import { PriceTable } from '../components/PriceTable';
 import { ArbitrageTable } from '../components/ArbitrageTable';
 
-interface Token {
-  id: number;
-  symbol: string;
-  name: string;
-}
-
-interface PriceRecord {
-  id: number;
-  token: Token;
-  price_usdc: string;
-  gas_fee: string;
-  rpc_url: string;
-}
-
-interface ArbitrageOpportunity {
-  id: number;
-  token: Token;
-  buy_price: string;
-  sell_price: string;
-  profit: string;
-  buy_rpc: string;
-  sell_rpc: string;
-  gas_fee: string;
-  status: string;
-  created_at: string;
-}
-
 export default function Home() {
-  const [prices, setPrices] = useState<PriceRecord[]>([]);
-  const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>([]);
+  const [prices, setPrices] = useState<any[]>([]);
+  const [opportunities, setOpportunities] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const updateData = async () => {
       try {
         const [pricesRes, oppsRes] = await Promise.all([
-          axios.get<PriceRecord[]>(`${process.env.NEXT_PUBLIC_API_URL}/price_records`),
-          axios.get<ArbitrageOpportunity[]>(`${process.env.NEXT_PUBLIC_API_URL}/arbitrage_opportunities`)
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/price_records`),
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/arbitrage_opportunities`)
         ]);
-        setPrices(pricesRes.data);
-        setOpportunities(oppsRes.data);
+
+        console.log('Prices response:', pricesRes.data);
+        console.log('Opportunities response:', oppsRes.data);
+
+        setPrices(Array.isArray(pricesRes.data) ? pricesRes.data : []);
+        setOpportunities(Array.isArray(oppsRes.data) ? oppsRes.data : []);
+        setError(null);
       } catch (error) {
         console.error('Error fetching data:', error);
+        setError('Failed to fetch data. Please try again later.');
       }
     };
-  
+
     updateData();
     const interval = setInterval(updateData, 30000);
     return () => clearInterval(interval);
@@ -56,6 +36,7 @@ export default function Home() {
 
   return (
     <Container size="xl" py="xl">
+      {error && <Text color="red" mb="xl">{error}</Text>}
       <PriceTable prices={prices} />
       <Space h="xl" />
       <ArbitrageTable opportunities={opportunities} />
