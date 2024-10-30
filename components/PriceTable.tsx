@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Text, Paper, Title } from '@mantine/core';
+import { Table, Paper, Title } from '@mantine/core';  // حذف Text از import
 
 interface PriceRecord {
   id: number;

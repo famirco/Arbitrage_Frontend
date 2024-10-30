@@ -5,8 +5,8 @@ import { PriceTable } from '../components/PriceTable';
 import { ArbitrageTable } from '../components/ArbitrageTable';
 
 export default function Home() {
-  const [prices, setPrices] = useState([]);
-  const [opportunities, setOpportunities] = useState([]);
+  const [prices, setPrices] = useState<any[]>([]);
+  const [opportunities, setOpportunities] = useState<any[]>([]);
 
   useEffect(() => {
     const updateData = async () => {
