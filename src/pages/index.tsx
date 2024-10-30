@@ -16,19 +16,18 @@ export default function Home() {
           axios.get(`${process.env.NEXT_PUBLIC_API_URL}/price_records`),
           axios.get(`${process.env.NEXT_PUBLIC_API_URL}/arbitrage_opportunities`)
         ]);
-
-        console.log('Prices response:', pricesRes.data);
-        console.log('Opportunities response:', oppsRes.data);
-
+  
+        // اضافه کردن log برای یک نمونه از داده‌ها
+        console.log('Sample price record:', pricesRes.data[0]);
+        console.log('Sample opportunity:', oppsRes.data[0]);
+  
         setPrices(Array.isArray(pricesRes.data) ? pricesRes.data : []);
         setOpportunities(Array.isArray(oppsRes.data) ? oppsRes.data : []);
-        setError(null);
       } catch (error) {
         console.error('Error fetching data:', error);
-        setError('Failed to fetch data. Please try again later.');
       }
     };
-
+  
     updateData();
     const interval = setInterval(updateData, 30000);
     return () => clearInterval(interval);
