@@ -41,4 +41,6 @@ export default function Home() {
       <ArbitrageTable opportunities={opportunities} />
     </Container>
   );
+
+  
 }
