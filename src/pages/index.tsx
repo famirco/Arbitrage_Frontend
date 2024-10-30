@@ -9,7 +9,7 @@ export default function Home() {
   const [opportunities, setOpportunities] = useState([]);
 
   useEffect(() => {
-    const fetchAndUpdateData = async () => {
+    const updateData = async () => {
       try {
         const [pricesRes, oppsRes] = await Promise.all([
           axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/price_records`),
@@ -22,10 +22,9 @@ export default function Home() {
       }
     };
 
-    fetchAndUpdateData(); // اجرای اولیه
-    const interval = setInterval(fetchAndUpdateData, 30000); // هر 30 ثانیه به‌روزرسانی
-
-    return () => clearInterval(interval); // پاکسازی interval در زمان unmount
+    updateData();
+    const interval = setInterval(updateData, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   return (

@@ -1,63 +1,66 @@
 import React from 'react';
-import { Table, Badge, Paper, Title } from '@mantine/core';
+import { Table, Text, Paper, Title } from '@mantine/core';
 
-interface ArbitrageOpportunity {
+interface PriceRecord {
   id: number;
   token: {
     symbol: string;
     name: string;
   };
-  buy_price: string;
-  sell_price: string;
-  profit: string;
-  buy_rpc: string;
-  sell_rpc: string;
+  price_usdc: string;
   gas_fee: string;
-  status: string;
-  created_at: string;
+  rpc_url: string;
 }
 
-export const ArbitrageTable: React.FC<{ opportunities: ArbitrageOpportunity[] }> = ({ opportunities }) => {
+export const PriceTable: React.FC<{ prices: PriceRecord[] }> = ({ prices }) => {
+  const groupedPrices = prices.reduce((acc, price) => {
+    if (!acc[price.token.symbol]) {
+      acc[price.token.symbol] = [];
+    }
+    acc[price.token.symbol].push(price);
+    return acc;
+  }, {} as Record<string, PriceRecord[]>);
+
   return (
     <Paper shadow="sm" p="md" withBorder>
-      <Title order={2} mb="md">Arbitrage Opportunities</Title>
+      <Title order={2} mb="md">Live Price Comparison</Title>
       <Table striped highlightOnHover>
         <thead>
           <tr>
             <th>Token</th>
-            <th>Buy Price</th>
-            <th>Sell Price</th>
-            <th>Profit %</th>
-            <th>Buy RPC</th>
-            <th>Sell RPC</th>
+            <th>RPC URL</th>
+            <th>Price (USDC)</th>
             <th>Gas Fee</th>
-            <th>Status</th>
-            <th>Detected At</th>
+            <th>Price Difference</th>
           </tr>
         </thead>
         <tbody>
-          {opportunities.map((opp) => (
-            <tr key={opp.id}>
-              <td>
-                <Text weight={500}>{opp.token.symbol}</Text>
-                <Text size="sm" color="dimmed">{opp.token.name}</Text>
-              </td>
-              <td>${parseFloat(opp.buy_price).toFixed(6)}</td>
-              <td>${parseFloat(opp.sell_price).toFixed(6)}</td>
-              <td style={{ color: 'green' }}>{parseFloat(opp.profit).toFixed(2)}%</td>
-              <td>{new URL(opp.buy_rpc).hostname}</td>
-              <td>{new URL(opp.sell_rpc).hostname}</td>
-              <td>${parseFloat(opp.gas_fee).toFixed(6)}</td>
-              <td>
-                <Badge 
-                  color={opp.status === 'detected' ? 'blue' : opp.status === 'executed' ? 'green' : 'red'}
-                >
-                  {opp.status}
-                </Badge>
-              </td>
-              <td>{new Date(opp.created_at).toLocaleString()}</td>
-            </tr>
-          ))}
+          {Object.entries(groupedPrices).map(([symbol, prices]) => {
+            const minPrice = Math.min(...prices.map(p => parseFloat(p.price_usdc)));
+            const maxPrice = Math.max(...prices.map(p => parseFloat(p.price_usdc)));
+            const priceDiff = ((maxPrice - minPrice) / minPrice * 100).toFixed(2);
+
+            return prices.map((price, idx) => (
+              <tr key={price.id}>
+                {idx === 0 && (
+                  <td rowSpan={prices.length}>
+                    <div>
+                      <strong>{symbol}</strong>
+                      <div style={{ color: 'gray', fontSize: '0.9em' }}>{price.token.name}</div>
+                    </div>
+                  </td>
+                )}
+                <td>{new URL(price.rpc_url).hostname}</td>
+                <td>${parseFloat(price.price_usdc).toFixed(6)}</td>
+                <td>${parseFloat(price.gas_fee).toFixed(6)}</td>
+                {idx === 0 && (
+                  <td rowSpan={prices.length} style={{ color: parseFloat(priceDiff) > 1 ? 'green' : 'inherit' }}>
+                    {priceDiff}%
+                  </td>
+                )}
+              </tr>
+            ));
+          })}
         </tbody>
       </Table>
     </Paper>
