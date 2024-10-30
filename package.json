@@ -25,7 +25,7 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   },
-  {
+  
     
     "eslintConfig": {
       "extends": "next/core-web-vitals",
@@ -35,5 +35,5 @@
       }
     }
     
-  }
+  
 }
