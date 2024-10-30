@@ -39,8 +39,8 @@ export default function Home() {
     const updateData = async () => {
       try {
         const [pricesRes, oppsRes] = await Promise.all([
-          axios.get<PriceRecord[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/price_records`),
-          axios.get<ArbitrageOpportunity[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/arbitrage_opportunities`)
+          axios.get<PriceRecord[]>(`${process.env.NEXT_PUBLIC_API_URL}/price_records`),
+          axios.get<ArbitrageOpportunity[]>(`${process.env.NEXT_PUBLIC_API_URL}/arbitrage_opportunities`)
         ]);
         setPrices(pricesRes.data);
         setOpportunities(oppsRes.data);
@@ -48,7 +48,7 @@ export default function Home() {
         console.error('Error fetching data:', error);
       }
     };
-
+  
     updateData();
     const interval = setInterval(updateData, 30000);
     return () => clearInterval(interval);
