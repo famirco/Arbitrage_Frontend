@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState } from 'react'
 import axios from 'axios'
-
+const API_BASE_URL = 'https://amirez.info/api/v1';
 interface Token {
   id: number
   name: string
@@ -26,16 +26,16 @@ export default function Home() {
     const fetchData = async () => {
       try {
         const [tokensResponse, pricesResponse] = await Promise.all([
-          axios.get('http://localhost:3000/api/v1/tokens'),
-          axios.get('http://localhost:3000/api/v1/price_records')
-        ])
+          axios.get(`${API_BASE_URL}/tokens`),
+          axios.get(`${API_BASE_URL}/price_records`)
+        ]);
 
         setTokens(tokensResponse.data)
         setPrices(pricesResponse.data)
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching data:', error);
       }
-    }
+    };
 
     fetchData()
     const interval = setInterval(fetchData, 10000)
