@@ -37,7 +37,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 30000); // Fetch every 30 seconds
+    const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -48,7 +48,7 @@ export default function Home() {
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Tokens</h2>
         <div className="grid gap-4">
-          {tokens.map((token: Token) => (
+          {tokens.map((token) => (
             <div key={token.id} className="border p-4 rounded">
               <p>Name: {token.name}</p>
               <p>Symbol: {token.symbol}</p>
@@ -61,9 +61,16 @@ export default function Home() {
       <div>
         <h2 className="text-xl font-semibold mb-2">Price Records</h2>
         <div className="grid gap-4">
-          {priceRecords.map((record: PriceRecord) => (
+          {priceRecords.map((record) => (
             <div key={record.id} className="border p-4 rounded">
               <p>Price USDC: {record.price_usdc}</p>
               <p>Gas Fee: {record.gas_fee}</p>
               <p>RPC URL: {record.rpc_url}</p>
-              <p>Time: {
+              <p>Time: {new Date(record.created_at).toLocaleString()}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
