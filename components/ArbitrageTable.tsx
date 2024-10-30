@@ -23,7 +23,7 @@ interface ArbitrageTableProps {
   opportunities: ArbitrageOpportunity[];
 }
 
-export const ArbitrageTable: React.FC<ArbitrageTableProps> = ({ opportunities }) => {
+export const ArbitrageTable = ({ opportunities }: ArbitrageTableProps) => {
   return (
     <Paper shadow="sm" p="md" withBorder>
       <Title order={2} mb="md">Arbitrage Opportunities</Title>
