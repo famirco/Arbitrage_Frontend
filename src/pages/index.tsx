@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Container, Space } from '@mantine/core';
-import axios from 'axios';
+import axios from 'axios';  // اضافه کردن این خط
 import { PriceTable } from '../components/PriceTable';
 import { ArbitrageTable } from '../components/ArbitrageTable';
 
