@@ -31,37 +31,6 @@ interface ArbitrageOpportunity {
   created_at: string;
 }
 
-// TEST_DATA را اینجا تعریف می‌کنیم
-const TEST_DATA = {
-  tokens: [
-    { id: 1, symbol: 'FTM', name: 'Fantom' },
-    { id: 2, symbol: 'ETH', name: 'Ethereum' }
-  ],
-  prices: [
-    {
-      id: 1,
-      token_id: 1,
-      price_usdc: '1.167782',
-      gas_fee: '0.203092',
-      rpc_url: 'https://rpc.ftm.tools'
-    }
-  ],
-  opportunities: [
-    {
-      id: 202,
-      token_id: 1,
-      buy_price: '1.265202',
-      sell_price: '2.781261',
-      profit: '119.83',
-      buy_rpc: 'https://rpc.ftm.tools',
-      sell_rpc: 'https://rpcapi.fantom.network',
-      gas_fee: '0.203092',
-      status: 'detected',
-      created_at: new Date().toISOString()
-    }
-  ]
-};
-
 export default function Home() {
   const [tokens, setTokens] = useState<Record<number, Token>>({});
   const [prices, setPrices] = useState<PriceRecord[]>([]);
@@ -76,6 +45,10 @@ export default function Home() {
           axios.get<PriceRecord[]>(`${process.env.NEXT_PUBLIC_API_URL}/price_records`),
           axios.get<ArbitrageOpportunity[]>(`${process.env.NEXT_PUBLIC_API_URL}/arbitrage_opportunities`)
         ]);
+
+        console.log('Tokens:', tokensRes.data);
+        console.log('Prices:', pricesRes.data);
+        console.log('Opportunities:', oppsRes.data);
 
         // Convert tokens array to a map for easy lookup
         const tokensMap = tokensRes.data.reduce((acc, token) => {
@@ -98,17 +71,26 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // Enhance price records with token information
-  const enhancedPrices = prices.map(price => ({
-    ...price,
-    token: tokens[price.token_id]
-  }));
+  // Enhance price records with token information and remove duplicates
+  const enhancedPrices = prices
+    .map(price => ({
+      ...price,
+      token: tokens[price.token_id]
+    }))
+    .filter((price, index, self) => 
+      index === self.findIndex((p) => (
+        p.token_id === price.token_id && 
+        p.rpc_url === price.rpc_url
+      ))
+    );
 
-  // Enhance opportunities with token information
-  const enhancedOpportunities = opportunities.map(opp => ({
-    ...opp,
-    token: tokens[opp.token_id]
-  }));
+  // Enhance opportunities with token information and sort by profit
+  const enhancedOpportunities = opportunities
+    .map(opp => ({
+      ...opp,
+      token: tokens[opp.token_id]
+    }))
+    .sort((a, b) => parseFloat(b.profit) - parseFloat(a.profit));
 
   return (
     <Container size="xl" py="xl">
