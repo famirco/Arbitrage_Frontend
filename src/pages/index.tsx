@@ -24,6 +24,7 @@ interface ArbitrageOpportunity {
   buy_price: string;
   sell_price: string;
   profit: string;
+  profit_usd: string;  // اضافه شد
   buy_rpc: string;
   sell_rpc: string;
   gas_fee: string;
@@ -46,10 +47,6 @@ export default function Home() {
           axios.get<ArbitrageOpportunity[]>(`${process.env.NEXT_PUBLIC_API_URL}/arbitrage_opportunities`)
         ]);
 
-        console.log('Tokens:', tokensRes.data);
-        console.log('Prices:', pricesRes.data);
-        console.log('Opportunities:', oppsRes.data);
-
         // Convert tokens array to a map for easy lookup
         const tokensMap = tokensRes.data.reduce((acc, token) => {
           acc[token.id] = token;
@@ -71,26 +68,17 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // Enhance price records with token information and remove duplicates
-  const enhancedPrices = prices
-    .map(price => ({
-      ...price,
-      token: tokens[price.token_id]
-    }))
-    .filter((price, index, self) => 
-      index === self.findIndex((p) => (
-        p.token_id === price.token_id && 
-        p.rpc_url === price.rpc_url
-      ))
-    );
+  // Enhance price records with token information
+  const enhancedPrices = prices.map(price => ({
+    ...price,
+    token: tokens[price.token_id]
+  }));
 
-  // Enhance opportunities with token information and sort by profit
-  const enhancedOpportunities = opportunities
-    .map(opp => ({
-      ...opp,
-      token: tokens[opp.token_id]
-    }))
-    .sort((a, b) => parseFloat(b.profit) - parseFloat(a.profit));
+  // Enhance opportunities with token information
+  const enhancedOpportunities = opportunities.map(opp => ({
+    ...opp,
+    token: tokens[opp.token_id]
+  }));
 
   return (
     <Container size="xl" py="xl">
