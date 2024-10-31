@@ -35,11 +35,9 @@ interface PriceTableProps {
 }
 
 export const PriceTable = ({ prices = [] }: PriceTableProps) => {
-  // ساخت ماتریس قیمت‌ها (توکن × RPC)
   const priceMatrix = useMemo(() => {
     const matrix: Record<string, Record<string, PriceRecord | undefined>> = {};
     
-    // ایجاد ساختار اولیه برای همه توکن‌ها
     STATIC_TOKENS.forEach(token => {
       matrix[token.symbol] = {};
       STATIC_RPCS.forEach(rpc => {
@@ -47,7 +45,6 @@ export const PriceTable = ({ prices = [] }: PriceTableProps) => {
       });
     });
 
-    // پر کردن ماتریس با داده‌های واقعی
     prices.forEach(price => {
       const token = STATIC_TOKENS.find(t => t.id === price.token_id);
       if (token) {
@@ -66,6 +63,20 @@ export const PriceTable = ({ prices = [] }: PriceTableProps) => {
     }
   };
 
+  const calculatePriceDiff = (price1?: PriceRecord, price2?: PriceRecord) => {
+    if (!price1 || !price2) return 'N/A';
+    const diff = ((parseFloat(price1.price_usdc) - parseFloat(price2.price_usdc)) 
+      / parseFloat(price2.price_usdc) * 100);
+    return (
+      <span style={{
+        color: Math.abs(diff) > 0.1 ? (diff > 0 ? 'green' : 'red') : 'inherit',
+        fontWeight: Math.abs(diff) > 0.1 ? 'bold' : 'normal'
+      }}>
+        {diff.toFixed(2)}%
+      </span>
+    );
+  };
+
   return (
     <Paper shadow="sm" p="md" withBorder>
       <Title order={2} mb="md">Live Price Comparison</Title>
@@ -76,14 +87,15 @@ export const PriceTable = ({ prices = [] }: PriceTableProps) => {
             <th>RPC</th>
             <th>Price (USDC)</th>
             <th>Gas Fee</th>
-            <th>Price Difference</th>
+            {STATIC_RPCS.map(rpc => (
+              <th key={rpc}>vs {getHostname(rpc)}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
           {STATIC_TOKENS.map(token => (
             STATIC_RPCS.map((rpc, rpcIndex) => {
-              const price = priceMatrix[token.symbol][rpc];
-              const basePrice = Object.values(priceMatrix[token.symbol]).find(p => p !== undefined);
+              const currentPrice = priceMatrix[token.symbol][rpc];
               
               return (
                 <tr key={`${token.symbol}-${rpc}`}>
@@ -98,18 +110,19 @@ export const PriceTable = ({ prices = [] }: PriceTableProps) => {
                     </td>
                   )}
                   <td>{getHostname(rpc)}</td>
-                  <td>{price ? `$${parseFloat(price.price_usdc).toFixed(6)}` : 'N/A'}</td>
-                  <td>{price ? `$${parseFloat(price.gas_fee).toFixed(6)}` : 'N/A'}</td>
-                  <td>
-                    {price && basePrice ? (
-                      <span style={{
-                        color: Math.abs(parseFloat(price.price_usdc) - parseFloat(basePrice.price_usdc)) > 0.000001 ? 'green' : 'inherit',
-                        fontWeight: Math.abs(parseFloat(price.price_usdc) - parseFloat(basePrice.price_usdc)) > 0.000001 ? 'bold' : 'normal'
-                      }}>
-                        {((parseFloat(price.price_usdc) - parseFloat(basePrice.price_usdc)) / parseFloat(basePrice.price_usdc) * 100).toFixed(2)}%
-                      </span>
-                    ) : 'N/A'}
-                  </td>
+                  <td>{currentPrice ? `$${parseFloat(currentPrice.price_usdc).toFixed(6)}` : 'N/A'}</td>
+                  <td>{currentPrice ? `$${parseFloat(currentPrice.gas_fee).toFixed(6)}` : 'N/A'}</td>
+                  {STATIC_RPCS.map(compareRpc => {
+                    const comparePrice = priceMatrix[token.symbol][compareRpc];
+                    if (compareRpc === rpc) {
+                      return <td key={compareRpc}>-</td>;
+                    }
+                    return (
+                      <td key={compareRpc}>
+                        {calculatePriceDiff(currentPrice, comparePrice)}
+                      </td>
+                    );
+                  })}
                 </tr>
               );
             })
