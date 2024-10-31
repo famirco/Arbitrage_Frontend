@@ -21,15 +21,6 @@ interface PriceTableProps {
 }
 
 export const PriceTable = ({ prices = [] }: PriceTableProps) => {
-  if (!Array.isArray(prices) || prices.length === 0) {
-    return (
-      <Paper shadow="sm" p="md" withBorder>
-        <Title order={2} mb="md">Live Price Comparison</Title>
-        <Text>No price data available</Text>
-      </Paper>
-    );
-  }
-
   // Group prices by token_id
   const groupedPrices = useMemo(() => {
     return prices.reduce<Record<number, PriceRecord[]>>((acc, price) => {
@@ -47,6 +38,15 @@ export const PriceTable = ({ prices = [] }: PriceTableProps) => {
     prices.forEach(price => rpcSet.add(price.rpc_url));
     return Array.from(rpcSet);
   }, [prices]);
+
+  if (!Array.isArray(prices) || prices.length === 0) {
+    return (
+      <Paper shadow="sm" p="md" withBorder>
+        <Title order={2} mb="md">Live Price Comparison</Title>
+        <Text>No price data available</Text>
+      </Paper>
+    );
+  }
 
   const getHostname = (url: string) => {
     try {
