@@ -37,13 +37,13 @@ interface PriceTableProps {
 export const PriceTable = ({ prices = [] }: PriceTableProps) => {
   // ساخت ماتریس قیمت‌ها (توکن × RPC)
   const priceMatrix = useMemo(() => {
-    const matrix: Record<string, Record<string, PriceRecord>> = {};
+    const matrix: Record<string, Record<string, PriceRecord | undefined>> = {};
     
     // ایجاد ساختار اولیه برای همه توکن‌ها
     STATIC_TOKENS.forEach(token => {
       matrix[token.symbol] = {};
       STATIC_RPCS.forEach(rpc => {
-        matrix[token.symbol][rpc] = null;
+        matrix[token.symbol][rpc] = undefined;
       });
     });
 
@@ -83,7 +83,7 @@ export const PriceTable = ({ prices = [] }: PriceTableProps) => {
           {STATIC_TOKENS.map(token => (
             STATIC_RPCS.map((rpc, rpcIndex) => {
               const price = priceMatrix[token.symbol][rpc];
-              const basePrice = Object.values(priceMatrix[token.symbol]).find(p => p !== null);
+              const basePrice = Object.values(priceMatrix[token.symbol]).find(p => p !== undefined);
               
               return (
                 <tr key={`${token.symbol}-${rpc}`}>
