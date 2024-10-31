@@ -14,6 +14,7 @@ interface ArbitrageOpportunity {
   buy_price: string;
   sell_price: string;
   profit: string;
+  profit_usd: string;
   buy_rpc: string;
   sell_rpc: string;
   gas_fee: string;
@@ -44,6 +45,7 @@ export const ArbitrageTable = ({ opportunities = [] }: ArbitrageTableProps) => {
             <th>Token</th>
             <th>Buy Price</th>
             <th>Sell Price</th>
+            <th>Profit USD</th>
             <th>Profit %</th>
             <th>Buy RPC</th>
             <th>Sell RPC</th>
@@ -65,7 +67,16 @@ export const ArbitrageTable = ({ opportunities = [] }: ArbitrageTableProps) => {
               </td>
               <td>${parseFloat(opp.buy_price).toFixed(6)}</td>
               <td>${parseFloat(opp.sell_price).toFixed(6)}</td>
-              <td style={{ color: parseFloat(opp.profit) > 0 ? 'green' : 'inherit' }}>
+              <td style={{ 
+                color: parseFloat(opp.profit_usd) >= 5 ? 'green' : 'inherit',
+                fontWeight: parseFloat(opp.profit_usd) >= 5 ? 'bold' : 'normal'
+              }}>
+                ${parseFloat(opp.profit_usd).toFixed(2)}
+              </td>
+              <td style={{ 
+                color: parseFloat(opp.profit) > 0 ? 'green' : 'inherit',
+                fontWeight: parseFloat(opp.profit) > 0 ? 'bold' : 'normal'
+              }}>
                 {parseFloat(opp.profit).toFixed(2)}%
               </td>
               <td>{new URL(opp.buy_rpc).hostname}</td>
